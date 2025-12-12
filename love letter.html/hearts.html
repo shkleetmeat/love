@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploding Hearts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffb6d9 0%, #ffc6e4 50%, #ffe4f0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #ff1493;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.3em;
+            color: #c71585;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            background-color: #ff1493;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
+        }
+
+        .back-btn:hover {
+            background-color: #ff69b4;
+            transform: scale(1.05);
+        }
+
+        @keyframes heartExplode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .exploding-heart {
+            position: fixed;
+            font-size: 40px;
+            pointer-events: none;
+            animation: heartExplode 2s ease-out forwards;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💕 Hearts Exploding For You! 💕</h1>
+        <p>Click anywhere on the screen to make hearts explode!</p>
+
+        <div id="timers" class="timers" aria-live="polite">
+            <!-- Timers will be injected here -->
+        </div>
+
+        <style>
+        .timers { display:flex; gap:12px; justify-content:center; margin: 20px 0 30px; flex-wrap:wrap; }
+        .timer-card { background: rgba(255,255,255,0.95); padding:12px 18px; border-radius:12px; box-shadow:0 6px 18px rgba(255,20,147,0.12); min-width:220px; text-align:center; }
+        .timer-label { font-weight:700; color:#c71585; margin-bottom:8px; }
+        .timer-count { font-size:1.1em; color:#ff1493; font-family:monospace; }
+        .timer-past { display: none; color:#777; font-size:0.95em; margin-top:8px; } 
+    
+        </style>
+
+        <button class="back-btn" onclick="goBack()">← Back to Main Page</button>
+    </div>
+
+    <script>
+        function createExplodingHearts(x, y) {
+            const heartEmojis = ['❤️', '💕', '💗', '💖', '💝', '💞', '💓', '💘'];
+            
+            for (let i = 0; i < 100; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'exploding-heart';
+                heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+
+                // Spread hearts in all directions
+                const angle = (Math.random() * Math.PI * 2);
+                const velocity = 100 + Math.random() * 200;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                heart.style.left = x + 'px';
+                heart.style.top = y + 'px';
+                heart.style.setProperty('--tx', tx + 'px');
+                heart.style.setProperty('--ty', ty + 'px');
+
+                document.body.appendChild(heart);
+
+                // Remove after animation
+                setTimeout(() => heart.remove(), 5000);
+            }
+        }
+
+        // Click anywhere on the page to create exploding hearts
+        document.addEventListener('click', function(event) {
+            // Don't trigger on button click
+            if (event.target.tagName !== 'BUTTON') {
+                createExplodingHearts(event.clientX, event.clientY);
+            }
+        });
+
+        // Also trigger on button clicks
+        document.querySelector('.back-btn').addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent double trigger
+            createExplodingHearts(event.clientX, event.clientY);
+            setTimeout(() => goBack(), 500);
+        });
+
+        function goBack() {
+            window.location.href = 'love letter.html';
+        }
+    </script>
+
+    <script>
+        // Timers definition: show countdown if future, or "Occurred X ago" if in the past
+        const timersDef = [
+            { label: "The First Time I Laid Eyes On You", date: new Date(2025, 3, 17, 18, 0, 0) }, // April 17, 2025 6:00 PM
+            { label: "Us Officialy Dating", date: new Date(2025, 4, 17, 0, 0, 0) }, // May 17, 2025 12:00 AM
+            { label: "The First Of Many I Love You's", date: new Date(2025, 10, 7, 21, 0, 0) } // Nov 7, 2025 9:00 PM
+        ];
+
+        function formatDuration(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const days = Math.floor(totalSeconds / (3600 * 24));
+            const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${days}d ${String(hours).padStart(2,'0')}h ${String(minutes).padStart(2,'0')}m ${String(seconds).padStart(2,'0')}s`;
+        }
+
+        function setupTimers() {
+            const container = document.getElementById('timers');
+            timersDef.forEach((t, i) => {
+                const card = document.createElement('div');
+                card.className = 'timer-card';
+
+                const label = document.createElement('div');
+                label.className = 'timer-label';
+                label.textContent = t.label;
+
+                const count = document.createElement('div');
+                count.className = 'timer-count';
+                count.id = `timer-${i}`;
+
+                const pastNote = document.createElement('div');
+                pastNote.className = 'timer-past';
+                pastNote.id = `timer-past-${i}`;
+
+                card.appendChild(label);
+                card.appendChild(count);
+                card.appendChild(pastNote);
+                container.appendChild(card);
+
+                // attach elements for update
+                t.el = count;
+                t.pastEl = pastNote;
+            });
+        }
+ function updateTimers() {
+            const now = new Date();
+            timersDef.forEach(t => {
+                const diff = t.date - now;
+                if (diff > 0) {
+                    t.el.textContent = formatDuration(diff);
+                    t.pastEl.textContent = '';
+                } else {
+                    // show time since
+                    t.el.textContent = formatDuration(Math.abs(diff));
+                    t.pastEl.textContent = `Occurred ${formatDuration(Math.abs(diff))} ago`;
+                }
+            });
+        }
+
+        // Initialize
+        setupTimers();
+        updateTimers();
+        setInterval(updateTimers, 1000);
+    </script>
+</body>
+</html>

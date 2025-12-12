@@ -1,0 +1,262 @@
+<!Doctype html>
+<html lang="en"
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title class="main">SWEETHEART Page</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Im creating this page to show how much I LOVE my babygirl and to show her what i can do</h1>
+    
+</body>
+<uil>
+    <li>Item 1: You are my sunshine</li>
+    <li>Item 2: You make my heart skip a beat</li>
+    <li>Item 3: Forever and always, my love</li>
+</uil>
+
+<button class="hearts" onclick="window.location.href='hearts.html'">Click me for a surprise!</button>
+<button onclick="document.body.style.backgroundColor = 'pink'; createHearts(event)">Make it Pink!</button>
+<button onclick="document.body.style.fontFamily = 'Comic Sans MS'; createHearts(event)">Change Font</button>
+<button onclick="document.body.style.fontSize = '20px'; createHearts(event)">Bigger Text</button>
+<button onclick="document.body.style.textAlign = 'center'; createHearts(event)">Center Text</button>
+
+<!-- Minigames Section -->
+<div style="margin: 40px 20px; text-align: center;">
+    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">
+        <button onclick="switchGame('memory')" id="memoryBtn" style="padding: 12px 25px; background: #ff1493; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s;" onmouseover="this.style.background='#ff69b4'" onmouseout="this.style.background='#ff1493'">🎮 Memory Card Game</button>
+        <button onclick="switchGame('wheel')" id="wheelBtn" style="padding: 12px 25px; background: rgba(255,20,147,0.5); color: #ff1493; border: 2px solid #ff1493; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s;" onmouseover="this.style.background='#ff1493'; this.style.color='white'" onmouseout="this.style.background='rgba(255,20,147,0.5)'; this.style.color='#ff1493'">🎡 Love Wheel</button>
+    </div>
+
+    <!-- Memory Card Game -->
+    <div id="memoryGame" style="display: block;">
+        <h2 style="color: #ff1493; margin-bottom: 20px;">Memory Card Game</h2>
+        <p style="color: #c71585; margin-bottom: 15px;">Match pairs of hearts!</p>
+        <div id="gameBoard" style="display: grid; grid-template-columns: repeat(4, 80px); gap: 10px; justify-content: center; margin-bottom: 20px;"></div>
+        <p id="gameStatus" style="color: #ff1493; font-weight: bold; font-size: 1.1em;"></p>
+        <button onclick="initializeMemoryGame()" style="padding: 10px 20px; background: #ff1493; color: white; border: none; border-radius: 15px; cursor: pointer; margin-top: 10px;">New Game</button>
+    </div>
+
+    <!-- Love Wheel Game -->
+    <div id="wheelGame" style="display: none; text-align: center;">
+        <h2 style="color: #ff1493; margin-bottom: 20px;">🎡 Love Wheel</h2>
+        <p style="color: #c71585; margin-bottom: 20px;">Spin for a sweet compliment!</p>
+        <div style="position: relative; width: 250px; height: 250px; margin: 20px auto; border: 3px solid #ff1493; border-radius: 50%; background: conic-gradient(#FFB6D9 0deg 90deg, #ffc6e4 90deg 180deg, #ffe4f0 180deg 270deg, #ffb6d9 270deg 360deg); display: flex; align-items: center; justify-content: center;" id="wheelSpinner">
+            <div style="font-size: 50px;">💕</div>
+        </div>
+        <p id="wheelResult" style="color: #ff1493; font-weight: bold; font-size: 1.2em; margin-top: 20px; min-height: 40px;"></p>
+        <button onclick="spinWheel()" style="padding: 12px 30px; background: #ff1493; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 1.1em; margin-top: 15px;">SPIN!</button>
+    </div>
+</div>
+
+<style>
+    .memory-card {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #ffb6d9, #ffc6e4);
+        border: 2px solid #ff1493;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        transition: transform 0.2s;
+        user-select: none;
+    }
+    .memory-card:hover { transform: scale(1.05); }
+    .memory-card.flipped { background: white; }
+    .memory-card.matched { background: #90EE90; }
+</style>
+
+<script>
+    // Memory Game Variables
+    let memoryCards = [];
+    let flipped = [];
+    let matched = [];
+    let moves = 0;
+    
+    const heartEmojis = ['❤️', '💕', '💗', '💖', '💝', '💞', '💓', '💘'];
+    
+    function initializeMemoryGame() {
+        memoryCards = [...heartEmojis, ...heartEmojis].sort(() => Math.random() - 0.5);
+        flipped = [];
+        matched = [];
+        moves = 0;
+        document.getElementById('gameStatus').textContent = 'Moves: 0';
+        
+        const board = document.getElementById('gameBoard');
+        board.innerHTML = '';
+        
+        memoryCards.forEach((emoji, idx) => {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            card.dataset.index = idx;
+            card.textContent = '?';
+            card.onclick = () => flipCard(card, idx);
+            board.appendChild(card);
+        });
+    }
+    
+    function flipCard(card, idx) {
+        if (flipped.length >= 2 || matched.includes(idx) || flipped.find(f => f.index === idx)) return;
+        
+        card.classList.add('flipped');
+        card.textContent = memoryCards[idx];
+        flipped.push({index: idx, emoji: memoryCards[idx]});
+        
+        if (flipped.length === 2) {
+            moves++;
+            document.getElementById('gameStatus').textContent = `Moves: ${moves}`;
+            
+            if (flipped[0].emoji === flipped[1].emoji) {
+                matched.push(flipped[0].index, flipped[1].index);
+                document.querySelectorAll('.memory-card').forEach((c, i) => {
+                    if (matched.includes(i)) c.classList.add('matched');
+                });
+                flipped = [];
+                
+                if (matched.length === memoryCards.length) {
+                    document.getElementById('gameStatus').textContent = `🎉 You Won in ${moves} moves!`;
+                    createExplodingHearts(window.innerWidth / 2, window.innerHeight / 2);
+                }
+            } else {
+                setTimeout(() => {
+                    document.querySelectorAll('.memory-card').forEach(c => {
+                        if (!matched.includes(c.dataset.index)) {
+                            c.classList.remove('flipped');
+                            c.textContent = '?';
+                        }
+                    });
+                    flipped = [];
+                }, 800);
+            }
+        }
+    }
+    
+    // Love Wheel
+    const compliments = [
+        'You light up my world! 🌟',
+        'I love your smile 😊',
+        'You\'re my forever person 💕',
+        'You make me so happy 😄',
+        'Your love means everything 💗',
+        'You\'re my best friend 👯',
+        'I adore you 😍',
+        'You inspire me daily ✨',
+        'My heart is yours 💞',
+        'You\'re absolutely beautiful 💋',
+        'I\'m lucky to have you 🍀',
+        'You\'re my everything 💕'
+    ];
+    
+    let isSpinning = false;
+    
+    function spinWheel() {
+        if (isSpinning) return;
+        isSpinning = true;
+        
+        const spinner = document.getElementById('wheelSpinner');
+        const result = document.getElementById('wheelResult');
+        
+        // Reset rotation
+        spinner.style.transform = 'rotate(0deg)';
+        spinner.style.transition = 'none';
+        
+        // Small delay to let the reset apply
+        setTimeout(() => {
+            const randomIndex = Math.floor(Math.random() * compliments.length);
+            const randomRotation = 360 + Math.floor(Math.random() * 360);
+            
+            spinner.style.transition = 'transform 1s ease-out';
+            spinner.style.transform = `rotate(${randomRotation}deg)`;
+            
+            setTimeout(() => {
+                result.textContent = compliments[randomIndex];
+                isSpinning = false;
+            }, 1100);
+        }, 50);
+    }
+    
+    function switchGame(game) {
+        if (game === 'memory') {
+            document.getElementById('memoryGame').style.display = 'block';
+            document.getElementById('wheelGame').style.display = 'none';
+            document.getElementById('memoryBtn').style.background = '#ff1493';
+            document.getElementById('memoryBtn').style.color = 'white';
+            document.getElementById('wheelBtn').style.background = 'rgba(255,20,147,0.5)';
+            document.getElementById('wheelBtn').style.color = '#ff1493';
+            initializeMemoryGame();
+        } else if (game === 'wheel') {
+            document.getElementById('memoryGame').style.display = 'none';
+            document.getElementById('wheelGame').style.display = 'block';
+            document.getElementById('wheelBtn').style.background = '#ff1493';
+            document.getElementById('wheelBtn').style.color = 'white';
+            document.getElementById('memoryBtn').style.background = 'rgba(255,20,147,0.5)';
+            document.getElementById('memoryBtn').style.color = '#ff1493';
+        }
+    }
+    
+    // Initialize on page load
+    initializeMemoryGame();
+</script>
+
+<style>
+    @keyframes heartFly {
+        0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(var(--tx), var(--ty)) scale(0);
+            opacity: 0;
+        }
+    }
+
+    .heart {
+        position: fixed;
+        font-size: 30px;
+        pointer-events: none;
+        animation: heartFly 3s ease-out forwards;
+        z-index: 9999;
+    }
+</style>
+
+<script>
+    function createHearts(event) {
+        const button = event.target;
+        const rect = button.getBoundingClientRect();
+        const buttonCenterX = rect.left + rect.width / 2;
+        const buttonCenterY = rect.top + rect.height / 2;
+
+        for (let i = 0; i < 8; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = '❤️';
+
+            // Random direction (spread out)
+            const angle = (Math.random() * Math.PI * 2);
+            const velocity = 50 + Math.random() * 100;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity - 50; // bias upward
+
+            heart.style.left = buttonCenterX + 'px';
+            heart.style.top = buttonCenterY + 'px';
+            heart.style.setProperty('--tx', tx + 'px');
+            heart.style.setProperty('--ty', ty + 'px');
+
+            document.body.appendChild(heart);
+
+            // Remove after animation completes
+            setTimeout(() => heart.remove(), 1500);
+        }
+    }
+</script>
+
+</html>
+
+<footer>
+    <p>&copy; 2024 My Sweetheart Page. Made with love.</p>
+</footer>
